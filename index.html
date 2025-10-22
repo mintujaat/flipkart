@@ -1,161 +1,62 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Device Info Dashboard</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f7f8fc;
-      color: #333;
-      text-align: center;
-      margin: 0;
-      padding: 30px;
-    }
-    .info-box {
-      background: white;
-      border-radius: 10px;
-      padding: 20px;
-      width: 350px;
-      margin: 20px auto;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      text-align: left;
-    }
-    h1 {
-      color: #007bff;
-    }
-    button {
-      background-color: #007bff;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    #map {
-      height: 300px;
-      width: 100%;
-      margin-top: 20px;
-      border-radius: 10px;
-    }
-  </style>
-</head>
-<body>
-  <h1>Device Info Dashboard</h1>
+<html>
+  <title>test</title>
+  <body>nothing </body>
+</html><!-- Add this inside your <body> at an appropriate place -->
+<button onclick="showConfirmPopup()">Send Data to Firebase</button>
 
-  <div class="info-box" id="device-info">
-    <p><strong>Public IP:</strong> <span id="ip">Loading...</span></p>
-    <p><strong>Browser:</strong> <span id="browser"></span></p>
-    <p><strong>Version:</strong> <span id="version"></span></p>
-    <p><strong>OS:</strong> <span id="os"></span></p>
-    <p><strong>Device Model:</strong> <span id="device-model">Detecting...</span></p>
-    <p><strong>Screen Width:</strong> <span id="width"></span> px</p>
-    <p><strong>Screen Height:</strong> <span id="height"></span> px</p>
-    <p><strong>Battery Level:</strong> <span id="battery">Loading...</span></p>
-  </div>
+<div id="confirmPopup" style="display:none; position:fixed; top:40%; left:50%; transform:translate(-50%, -50%);
+     background:#fff; border:1px solid #ccc; padding:20px; box-shadow:0px 0px 10px rgba(0,0,0,0.3); z-index:100;">
+  <p>Do you want to send your device info data to Firebase?</p>
+  <button onclick="sendDataToFirebase()">Yes</button>
+  <button onclick="hideConfirmPopup()">No</button>
+</div>
 
-  <div class="info-box">
-    <p><strong>Location:</strong> <span id="location">Click button to allow</span></p>
-    <button onclick="getLocation()">Allow Location</button>
-    <div id="map"></div>
-  </div>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
-  <script>
-    // Fetch public IP using ipify API
-    fetch("https://api.ipify.org?format=json")
-      .then((response) => response.json())
-      .then((data) => {
-        document.getElementById("ip").innerText = data.ip;
-      })
-      .catch(() => {
-        document.getElementById("ip").innerText = "Unable to fetch IP";
-      });
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    // Add other config fields as needed
+  };
 
-    // Browser and System Info
-    const userAgent = navigator.userAgent;
-    document.getElementById("browser").innerText = navigator.appName || "Unknown";
-    document.getElementById("version").innerText = navigator.appVersion || "Unknown";
-    document.getElementById("os").innerText = userAgent.includes("Windows")
-      ? "Windows"
-      : userAgent.includes("Mac")
-      ? "MacOS"
-      : userAgent.includes("Linux")
-      ? "Linux"
-      : userAgent.includes("Android")
-      ? "Android"
-      : userAgent.includes("iPhone")
-      ? "iOS"
-      : "Unknown";
-    document.getElementById("width").innerText = screen.width;
-    document.getElementById("height").innerText = screen.height;
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-    // Detect Device Model (User-Agent Client Hints API if available)
-    async function detectDeviceModel() {
-      if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
-        try {
-          const ua = await navigator.userAgentData.getHighEntropyValues([
-            "model",
-            "platform",
-            "platformVersion",
-          ]);
-          document.getElementById("device-model").innerText = ua.model || "Unknown";
-        } catch {
-          document.getElementById("device-model").innerText = "Unknown";
-        }
-      } else {
-        // Fallback: primitive user agent pattern matching
-        if (/iPhone/.test(userAgent)) document.getElementById("device-model").innerText = "iPhone";
-        else if (/iPad/.test(userAgent)) document.getElementById("device-model").innerText = "iPad";
-        else if (/Android/.test(userAgent)) document.getElementById("device-model").innerText = "Android Device";
-        else document.getElementById("device-model").innerText = "Unknown";
-      }
+  function showConfirmPopup() {
+    document.getElementById('confirmPopup').style.display = 'block';
+  }
+  
+  function hideConfirmPopup() {
+    document.getElementById('confirmPopup').style.display = 'none';
+  }
+
+  async function sendDataToFirebase() {
+    hideConfirmPopup();
+
+    // Gather your data - replace these with your actual collected values
+    const data = {
+      ip: document.getElementById("ip").innerText,
+      browser: document.getElementById("browser").innerText,
+      version: document.getElementById("version").innerText,
+      os: document.getElementById("os").innerText,
+      device_model: document.getElementById("device-model").innerText,
+      screen_width: document.getElementById("width").innerText,
+      screen_height: document.getElementById("height").innerText,
+      battery_level: document.getElementById("battery").innerText,
+      location: document.getElementById("location").innerText,
+      timestamp: serverTimestamp()
+    };
+
+    try {
+      const docRef = await addDoc(collection(db, "device_submissions"), data);
+      console.log("Document written with ID: ", docRef.id);
+      alert("Data successfully sent!");
+    } catch (e) {
+      console.error("Error adding document: ", e);
+      alert("Failed to send data.");
     }
-    detectDeviceModel();
-
-    // Battery Info
-    if (navigator.getBattery) {
-      navigator.getBattery().then((battery) => {
-        const level = Math.round(battery.level * 100);
-        document.getElementById("battery").innerText = level + "%";
-        battery.addEventListener("levelchange", () => {
-          document.getElementById("battery").innerText = Math.round(battery.level * 100) + "%";
-        });
-      });
-    } else {
-      document.getElementById("battery").innerText = "Not supported";
-    }
-
-    // Location Info and Google Map
-    function getLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(showPosition, showError);
-      } else {
-        document.getElementById("location").innerText = "Geolocation not supported.";
-      }
-    }
-
-    function showPosition(position) {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
-      document.getElementById("location").innerText = `Latitude: ${lat}, Longitude: ${lon}`;
-      const map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat, lng: lon },
-        zoom: 14,
-      });
-      new google.maps.Marker({ position: { lat, lng: lon }, map: map, title: "You are here!" });
-    }
-
-    function showError(error) {
-      document.getElementById("location").innerText = "Permission denied or error fetching location.";
-    }
-  </script>
-
-  <!-- Replace with your Google Maps API key -->
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
-</body>
-</html>
+  }
+</script></html>
