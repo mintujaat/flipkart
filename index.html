@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Device Info Dashboard</title>
   <style>
     body {
@@ -19,7 +19,7 @@
       padding: 20px;
       width: 350px;
       margin: 20px auto;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       text-align: left;
     }
     h1 {
@@ -49,9 +49,11 @@
   <h1>Device Info Dashboard</h1>
 
   <div class="info-box" id="device-info">
+    <p><strong>Public IP:</strong> <span id="ip">Loading...</span></p>
     <p><strong>Browser:</strong> <span id="browser"></span></p>
     <p><strong>Version:</strong> <span id="version"></span></p>
     <p><strong>OS:</strong> <span id="os"></span></p>
+    <p><strong>Device Model:</strong> <span id="device-model">Detecting...</span></p>
     <p><strong>Screen Width:</strong> <span id="width"></span> px</p>
     <p><strong>Screen Height:</strong> <span id="height"></span> px</p>
     <p><strong>Battery Level:</strong> <span id="battery">Loading...</span></p>
@@ -64,22 +66,60 @@
   </div>
 
   <script>
+    // Fetch public IP using ipify API
+    fetch("https://api.ipify.org?format=json")
+      .then((response) => response.json())
+      .then((data) => {
+        document.getElementById("ip").innerText = data.ip;
+      })
+      .catch(() => {
+        document.getElementById("ip").innerText = "Unable to fetch IP";
+      });
+
     // Browser and System Info
     const userAgent = navigator.userAgent;
     document.getElementById("browser").innerText = navigator.appName || "Unknown";
     document.getElementById("version").innerText = navigator.appVersion || "Unknown";
-    document.getElementById("os").innerText = userAgent.includes("Windows") ? "Windows" :
-                                              userAgent.includes("Mac") ? "MacOS" :
-                                              userAgent.includes("Linux") ? "Linux" :
-                                              userAgent.includes("Android") ? "Android" :
-                                              userAgent.includes("iPhone") ? "iOS" :
-                                              "Unknown";
+    document.getElementById("os").innerText = userAgent.includes("Windows")
+      ? "Windows"
+      : userAgent.includes("Mac")
+      ? "MacOS"
+      : userAgent.includes("Linux")
+      ? "Linux"
+      : userAgent.includes("Android")
+      ? "Android"
+      : userAgent.includes("iPhone")
+      ? "iOS"
+      : "Unknown";
     document.getElementById("width").innerText = screen.width;
     document.getElementById("height").innerText = screen.height;
 
+    // Detect Device Model (User-Agent Client Hints API if available)
+    async function detectDeviceModel() {
+      if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+        try {
+          const ua = await navigator.userAgentData.getHighEntropyValues([
+            "model",
+            "platform",
+            "platformVersion",
+          ]);
+          document.getElementById("device-model").innerText = ua.model || "Unknown";
+        } catch {
+          document.getElementById("device-model").innerText = "Unknown";
+        }
+      } else {
+        // Fallback: primitive user agent pattern matching
+        if (/iPhone/.test(userAgent)) document.getElementById("device-model").innerText = "iPhone";
+        else if (/iPad/.test(userAgent)) document.getElementById("device-model").innerText = "iPad";
+        else if (/Android/.test(userAgent)) document.getElementById("device-model").innerText = "Android Device";
+        else document.getElementById("device-model").innerText = "Unknown";
+      }
+    }
+    detectDeviceModel();
+
     // Battery Info
     if (navigator.getBattery) {
-      navigator.getBattery().then(battery => {
+      navigator.getBattery().then((battery) => {
         const level = Math.round(battery.level * 100);
         document.getElementById("battery").innerText = level + "%";
         battery.addEventListener("levelchange", () => {
@@ -105,7 +145,7 @@
       document.getElementById("location").innerText = `Latitude: ${lat}, Longitude: ${lon}`;
       const map = new google.maps.Map(document.getElementById("map"), {
         center: { lat, lng: lon },
-        zoom: 14
+        zoom: 14,
       });
       new google.maps.Marker({ position: { lat, lng: lon }, map: map, title: "You are here!" });
     }
@@ -115,7 +155,7 @@
     }
   </script>
 
-  <!-- Replace with your own Google Maps API key -->
+  <!-- Replace with your Google Maps API key -->
   <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
 </body>
 </html>
