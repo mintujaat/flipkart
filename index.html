@@ -1,221 +1,37 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Live Client Info — Demo</title>
-  <style>
-    :root{ --bg:#0f1724; --card:#0b1220; --accent:#06b6d4; --text:#e6eef6; }
-    body{ font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
-      background:linear-gradient(180deg,#071021 0%, #071428 100%); color:var(--text); }
-    .wrap{ width:980px; max-width:96%; padding:20px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:12px; box-shadow:0 8px 30px rgba(2,6,23,0.6); }
-    h1{ margin:0 0 8px 0; font-size:20px; color:var(--accent); }
-    p.note{ margin:0 0 18px 0; color:#9fb3bf; font-size:13px; }
-    .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
-    .card{ background:var(--card); padding:14px; border-radius:8px; min-height:64px; }
-    .key{ font-size:12px; color:#9fb3bf; }
-    .val{ margin-top:6px; font-weight:600; word-break:break-word; }
-    .full{ grid-column:1/-1; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    button{ background:var(--accent); border:0; color:#022; padding:10px 14px; border-radius:8px; cursor:pointer; font-weight:700; }
-    input[type="text"]{ padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.04); background:transparent; color:var(--text); min-width:200px; }
-    label{ font-size:13px; color:#9fb3bf; display:flex; gap:8px; align-items:center; }
-    .small{ font-size:12px; color:#93a7b4; margin-top:6px; }
-    footer{ margin-top:12px; font-size:12px; color:#7e9aa7; }
-    pre { margin:0; font-family:monospace; font-size:13px; background:rgba(255,255,255,0.02); padding:8px; border-radius:6px; overflow:auto; }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flipkart Clone</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="wrap">
-    <h1>Client Info — Live (consent required)</h1>
-    <p class="note">This page requests permissions to read non-sensitive info: IP, geolocation, battery, device info exposed by the browser. <strong>Phone number and device "name" cannot be retrieved automatically.</strong> Ask user to enter them if needed.</p>
 
-    <div style="margin-bottom:12px;">
-      <label><input id="consent" type="checkbox" /> I consent to share my device info with this page (required)</label>
+  <!-- Header -->
+  <header>
+    <div class="logo">Flipkart</div>
+    <input type="text" class="search-bar" placeholder="Search for products">
+    <div class="header-right">
+      <a href="cart.html">Cart</a>
+      <a href="#">Login</a>
     </div>
+  </header>
 
-    <div class="full">
-      <button id="collectBtn">Collect Info Now</button>
-      <label>
-        Phone number (optional)
-        <input id="phoneInput" type="text" placeholder="Enter phone number if you want" />
-      </label>
-      <label>
-        Device name (optional)
-        <input id="devnameInput" type="text" placeholder="e.g., John's Pixel 6" />
-      </label>
-    </div>
-
-    <div class="grid" style="margin-top:14px;">
-      <div class="card">
-        <div class="key">IP Address</div>
-        <div class="val" id="ip">—</div>
-        <div class="small">Might be VPN/Proxy masked</div>
-      </div>
-
-      <div class="card">
-        <div class="key">Current Page URL</div>
-        <div class="val" id="url">—</div>
-      </div>
-
-      <div class="card">
-        <div class="key">Geolocation (lat, long)</div>
-        <div class="val" id="geo">—</div>
-        <div class="small" id="geoAccuracy"></div>
-      </div>
-
-      <div class="card">
-        <div class="key">Battery</div>
-        <div class="val" id="battery">—</div>
-        <div class="small" id="batteryState"></div>
-      </div>
-
-      <div class="card">
-        <div class="key">Browser / Device Info</div>
-        <div class="val" id="agent">—</div>
-        <div class="small" id="platform"></div>
-      </div>
-
-      <div class="card">
-        <div class="key">Screen</div>
-        <div class="val" id="screen">—</div>
-      </div>
-
-      <div class="card">
-        <div class="key">Entered Phone</div>
-        <div class="val" id="phone">—</div>
-      </div>
-
-      <div class="card">
-        <div class="key">Entered Device Name</div>
-        <div class="val" id="devname">—</div>
-      </div>
-    </div>
-
-    <div style="margin-top:12px;" class="card">
-      <div class="key">Raw JSON / Debug</div>
-      <pre id="debug">—</pre>
-    </div>
-
-    <footer>Note: This demo only displays info in the browser. If you want to send it to a server, uncomment the fetch() in the script but <strong>do not</strong> collect without explicit consent.</footer>
+  <!-- Main Banner -->
+  <div class="banner">
+    <h1>Big Billion Days Sale!</h1>
+    <p>Shop the best deals on electronics, fashion, and more.</p>
   </div>
 
-  <script>
-    // Helper to set text
-    const set = (id, text) => document.getElementById(id).textContent = text ?? "—";
+  <!-- Product Listings -->
+  <div class="product-list">
+    <h2>Featured Products</h2>
+    <div class="products" id="products">
+      <!-- Product cards will be injected here by JavaScript -->
+    </div>
+  </div>
 
-    // Collect IP using ipify public API (simple, no key required).
-    // If you plan to run this in production, prefer your own backend proxy and respect privacy rules.
-    async function fetchIP(){
-      try{
-        const r = await fetch('https://api.ipify.org?format=json');
-        if(!r.ok) throw new Error('IP fetch failed');
-        const j = await r.json();
-        return j.ip;
-      }catch(e){
-        return 'Unavailable (' + (e.message||'error') + ')';
-      }
-    }
-
-    // Geolocation
-    function getGeo(){
-      if(!navigator.geolocation) return Promise.resolve({error:'Geolocation not supported'});
-      return new Promise((res)=>{
-        navigator.geolocation.getCurrentPosition(pos=>{
-          res({lat: pos.coords.latitude, lon: pos.coords.longitude, accuracy: pos.coords.accuracy});
-        }, err=>{
-          res({error: err.message || err.code});
-        }, {enableHighAccuracy:true, timeout:15000, maximumAge:0});
-      });
-    }
-
-    // Battery
-    async function getBattery(){
-      if(!navigator.getBattery) return {error:'Battery API not supported'};
-      try{
-        const b = await navigator.getBattery();
-        return {level: Math.round(b.level * 100), charging: b.charging};
-      }catch(e){
-        return {error: e.message};
-      }
-    }
-
-    // Main collect function
-    async function collectAll(){
-      if(!document.getElementById('consent').checked){
-        alert('Consent required. Check the consent box to proceed.');
-        return;
-      }
-
-      set('url', location.href || '—');
-      set('agent', navigator.userAgent || '—');
-      set('platform', navigator.platform || '—');
-      set('screen', `${screen.width} x ${screen.height} (${screen.colorDepth}bit)`);
-
-      // Phone/device name from user inputs
-      const phoneVal = document.getElementById('phoneInput').value.trim();
-      const devNameVal = document.getElementById('devnameInput').value.trim();
-      set('phone', phoneVal || 'Not provided');
-      set('devname', devNameVal || 'Not provided');
-
-      // IP
-      set('ip', 'Fetching…');
-      const ip = await fetchIP();
-      set('ip', ip);
-
-      // Geolocation
-      set('geo','Requesting permission…');
-      const geo = await getGeo();
-      if(geo.error){
-        set('geo', 'Permission denied or unavailable — ' + geo.error);
-        set('geoAccuracy','');
-      } else {
-        set('geo', `${geo.lat}, ${geo.lon}`);
-        set('geoAccuracy', `Accuracy: ${geo.accuracy} meters`);
-      }
-
-      // Battery
-      set('battery','Checking…');
-      const bat = await getBattery();
-      if(bat.error){
-        set('battery','Unavailable — ' + bat.error);
-        set('batteryState','');
-      } else {
-        set('battery', bat.level + '%');
-        set('batteryState', bat.charging ? 'Charging' : 'Not charging');
-      }
-
-      // Debug JSON
-      const debugObj = {
-        timestamp: new Date().toISOString(),
-        url: location.href,
-        ip,
-        geo,
-        battery: bat,
-        userAgent: navigator.userAgent,
-        platform: navigator.platform,
-        screen: {width: screen.width, height: screen.height, colorDepth: screen.colorDepth},
-        enteredPhone: phoneVal || null,
-        enteredDeviceName: devNameVal || null
-      };
-      set('debug', JSON.stringify(debugObj, null, 2));
-
-      // If you want to send this to a server, do it only with explicit consent.
-      // Example (commented out):
-      /*
-      try {
-        await fetch('https://your-server.example.com/collect', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify(debugObj)
-        });
-      } catch(e) {
-        console.error('Send failed', e);
-      }
-      */
-    }
-
-    document.getElementById('collectBtn').addEventListener('click', collectAll);
-  </script>
+  <script src="main.js"></script>
 </body>
 </html>
